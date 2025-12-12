@@ -73,6 +73,8 @@ class BulkUploadController extends Controller
                             'amount' => $row['amount'],
                             'currency' => $row['currency'],
                             'installment_frequency' => $row['installment_frequency'],
+                            'discount_type' => $row['discount_type'] ?? null,
+                            'discount_value' => $row['discount_value'] ?? null,
                             'created_by' => auth()->id(),
                         ]);
                         
@@ -144,11 +146,11 @@ class BulkUploadController extends Controller
      */
     private function validateData($data)
     {
-        $validated = [];
-        $rowNumber = 1;
-        
-        $requiredFields = ['app_name', 'client_name', 'invoice_number', 'invoice_date', 
-                          'duration_months', 'amount', 'currency', 'installment_frequency'];
+            $validated = [];
+            $rowNumber = 1;
+            
+            $requiredFields = ['app_name', 'client_name', 'invoice_number', 'invoice_date', 
+                              'duration_months', 'amount', 'currency', 'installment_frequency'];
         
         foreach ($data as $row) {
             $rowNumber++;
@@ -179,10 +181,33 @@ class BulkUploadController extends Controller
                 $isValid = false;
             }
             
-            if (isset($row['installment_frequency']) && !in_array($row['installment_frequency'], ['monthly', 'quarterly', 'yearly'])) {
-                $errors[] = "Invalid installment_frequency";
-                $isValid = false;
-            }
+                if (isset($row['installment_frequency']) && !in_array($row['installment_frequency'], ['monthly', 'quarterly', 'yearly'])) {
+                    $errors[] = "Invalid installment_frequency";
+                    $isValid = false;
+                }
+
+                // Optional discount fields validation
+                $discountType = $row['discount_type'] ?? null;
+                $discountValue = $row['discount_value'] ?? null;
+
+                if ($discountType !== null && $discountType !== '') {
+                    if (!in_array($discountType, ['percentage', 'fixed'])) {
+                        $errors[] = "Invalid discount_type (must be 'percentage' or 'fixed')";
+                        $isValid = false;
+                    }
+
+                    if ($discountValue === null || $discountValue === '') {
+                        $errors[] = "discount_value is required when discount_type is provided";
+                        $isValid = false;
+                    }
+                }
+
+                if ($discountValue !== null && $discountValue !== '') {
+                    if (!is_numeric($discountValue) || $discountValue < 0) {
+                        $errors[] = "Invalid discount_value (must be a non-negative number)";
+                        $isValid = false;
+                    }
+                }
             
             // Check for duplicate invoice number
             if (isset($row['invoice_number']) && Contract::where('invoice_number', $row['invoice_number'])->exists()) {

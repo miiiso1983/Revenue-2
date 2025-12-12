@@ -49,6 +49,7 @@
                 <option value="both" {{ $dataType == 'both' ? 'selected' : '' }}>Both</option>
                 <option value="revenue" {{ $dataType == 'revenue' ? 'selected' : '' }}>Revenue Only</option>
                 <option value="installments" {{ $dataType == 'installments' ? 'selected' : '' }}>Installments Only</option>
+                <option value="discount" {{ $dataType == 'discount' ? 'selected' : '' }}>Discount Only</option>
             </select>
         </div>
         <div class="flex items-end space-x-2">

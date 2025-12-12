@@ -1,7 +1,7 @@
-app_name,client_name,invoice_number,invoice_date,duration_months,amount,currency,installment_frequency
-ERP System,Acme Corporation,INV-2025-001,2025-01-01,12,12000.00,USD,monthly
-CRM Software,Tech Solutions Ltd,INV-2025-002,2025-01-15,6,3600.00,USD,quarterly
-Inventory Management,Global Traders Inc,INV-2025-003,2025-02-01,24,48000000.00,IQD,yearly
-HR Management System,Acme Corporation,INV-2025-004,2025-03-01,12,18000.00,USD,monthly
-Accounting Software,Finance Corp,INV-2025-005,2025-03-15,18,27000.00,USD,quarterly
+app_name,client_name,invoice_number,invoice_date,duration_months,amount,currency,installment_frequency,discount_type,discount_value
+ERP System,Acme Corporation,INV-2025-001,2025-01-01,12,12000.00,USD,monthly,percentage,10
+CRM Software,Tech Solutions Ltd,INV-2025-002,2025-01-15,6,3600.00,USD,quarterly,fixed,600
+Inventory Management,Global Traders Inc,INV-2025-003,2025-02-01,24,48000000.00,IQD,yearly,,
+HR Management System,Acme Corporation,INV-2025-004,2025-03-01,12,18000.00,USD,monthly,,
+Accounting Software,Finance Corp,INV-2025-005,2025-03-15,18,27000.00,USD,quarterly,,
 

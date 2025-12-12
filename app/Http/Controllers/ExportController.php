@@ -59,7 +59,16 @@ class ExportController extends Controller
             $infoRow++;
         }
         if ($dataType != 'both') {
-            $dataTypeLabel = $dataType == 'revenue' ? 'Revenue Only' : 'Installments Only';
+            if ($dataType === 'revenue') {
+                $dataTypeLabel = 'Revenue Only';
+            } elseif ($dataType === 'installments') {
+                $dataTypeLabel = 'Installments Only';
+            } elseif ($dataType === 'discount') {
+                $dataTypeLabel = 'Discount Only';
+            } else {
+                $dataTypeLabel = 'Filtered';
+            }
+
             $sheet->setCellValue('A' . $infoRow, 'Data Type: ' . $dataTypeLabel);
             $sheet->mergeCells('A' . $infoRow . ':E' . $infoRow);
             $infoRow++;

@@ -29,35 +29,41 @@
     </div>
 
     <!-- Instructions -->
-    <div class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">File Format Instructions</h2>
-        <div class="space-y-3 text-sm">
-            <p class="font-semibold">Required Columns (in order):</p>
-            <ol class="list-decimal list-inside space-y-1 text-gray-700">
-                <li>app_name</li>
-                <li>client_name</li>
-                <li>invoice_number</li>
-                <li>invoice_date (YYYY-MM-DD)</li>
-                <li>duration_months (1-120)</li>
-                <li>amount (numeric)</li>
-                <li>currency (USD or IQD)</li>
-                <li>installment_frequency (monthly, quarterly, or yearly)</li>
-            </ol>
+            <div class="card">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">File Format Instructions</h2>
+                <div class="space-y-3 text-sm">
+                    <p class="font-semibold">Required Columns (in order):</p>
+                    <ol class="list-decimal list-inside space-y-1 text-gray-700">
+                        <li>app_name</li>
+                        <li>client_name</li>
+                        <li>invoice_number</li>
+                        <li>invoice_date (YYYY-MM-DD)</li>
+                        <li>duration_months (1-120)</li>
+                        <li>amount (numeric)</li>
+                        <li>currency (USD or IQD)</li>
+                        <li>installment_frequency (monthly, quarterly, or yearly)</li>
+                    </ol>
 
-            <div class="mt-4 p-3 bg-blue-50 rounded">
-                <p class="font-semibold text-blue-800">Example CSV:</p>
-                <pre class="text-xs mt-2 text-blue-900">app_name,client_name,invoice_number,invoice_date,duration_months,amount,currency,installment_frequency
-ERP System,Acme Corp,INV-001,2025-01-01,12,12000.00,USD,monthly
-CRM Software,Tech Ltd,INV-002,2025-02-01,6,3600.00,USD,quarterly</pre>
-            </div>
+                    <p class="font-semibold mt-4">Optional Columns:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        <li><span class="font-mono">discount_type</span> ("percentage" or "fixed")</li>
+                        <li><span class="font-mono">discount_value</span> (numeric, &ge; 0)</li>
+                    </ul>
 
-            <div class="mt-4">
-                <a href="/sample-contracts.csv" class="text-blue-600 hover:underline" download>
-                    📥 Download Sample CSV Template
-                </a>
+                    <div class="mt-4 p-3 bg-blue-50 rounded">
+                        <p class="font-semibold text-blue-800">Example CSV:</p>
+                        <pre class="text-xs mt-2 text-blue-900">app_name,client_name,invoice_number,invoice_date,duration_months,amount,currency,installment_frequency,discount_type,discount_value
+ERP System,Acme Corp,INV-001,2025-01-01,12,12000.00,USD,monthly,percentage,10
+CRM Software,Tech Ltd,INV-002,2025-02-01,6,3600.00,USD,quarterly,fixed,600</pre>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="/sample-contracts.csv" class="text-blue-600 hover:underline" download>
+                            📥 Download Sample CSV Template
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 </div>
 
 <!-- Notes -->
