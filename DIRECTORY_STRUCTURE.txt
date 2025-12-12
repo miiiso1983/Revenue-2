@@ -1,0 +1,159 @@
+Revenue and Installment Management System - Directory Structure
+================================================================
+
+revenue-management/
+│
+├── app/                                    # Application core
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── AuthController.php         # Login/logout logic
+│   │   │   ├── DashboardController.php    # Dashboard statistics
+│   │   │   ├── ContractController.php     # Contract CRUD operations
+│   │   │   ├── ReportController.php       # Pivot table reports
+│   │   │   ├── BulkUploadController.php   # CSV/Excel bulk import
+│   │   │   ├── ExportController.php       # Excel export functionality
+│   │   │   └── AuditLogController.php     # Audit log viewing
+│   │   └── Middleware/
+│   │       ├── AdminMiddleware.php        # Role-based access control
+│   │       ├── EncryptCookies.php         # Cookie encryption
+│   │       └── VerifyCsrfToken.php        # CSRF protection
+│   └── Models/
+│       ├── User.php                       # User model with roles
+│       ├── Contract.php                   # Contract with auto-calculations
+│       ├── MonthlyAllocation.php          # Revenue allocations
+│       ├── Installment.php                # Installment schedules
+│       └── AuditLog.php                   # Change tracking
+│
+├── bootstrap/
+│   └── app.php                            # Application bootstrap
+│
+├── config/                                # Configuration files
+│   ├── app.php                            # Application config
+│   ├── auth.php                           # Authentication config
+│   ├── database.php                       # Database connections
+│   ├── session.php                        # Session management
+│   └── sanctum.php                        # API authentication
+│
+├── database/
+│   ├── migrations/
+│   │   ├── 2014_10_12_000000_create_users_table.php
+│   │   ├── 2024_01_01_000001_create_contracts_table.php
+│   │   ├── 2024_01_01_000002_create_monthly_allocations_table.php
+│   │   ├── 2024_01_01_000003_create_installments_table.php
+│   │   └── 2024_01_01_000004_create_audit_logs_table.php
+│   ├── seeders/
+│   │   └── DatabaseSeeder.php            # Sample data generator
+│   └── schema.sql                        # Direct SQL schema
+│
+├── public/                                # Public web root
+│   ├── index.php                          # Application entry point
+│   └── sample-contracts.csv               # Bulk upload template
+│
+├── resources/
+│   ├── views/
+│   │   ├── layouts/
+│   │   │   └── app.blade.php             # Main layout template
+│   │   ├── auth/
+│   │   │   └── login.blade.php           # Login page
+│   │   ├── contracts/
+│   │   │   ├── index.blade.php           # Contract list
+│   │   │   ├── create.blade.php          # Create contract form
+│   │   │   ├── edit.blade.php            # Edit contract form
+│   │   │   ├── show.blade.php            # Contract details
+│   │   │   ├── bulk-upload.blade.php     # Bulk upload form
+│   │   │   └── bulk-preview.blade.php    # Upload preview
+│   │   ├── reports/
+│   │   │   └── pivot.blade.php           # Pivot table report
+│   │   ├── audit-logs/
+│   │   │   └── index.blade.php           # Audit log viewer
+│   │   └── dashboard.blade.php           # Dashboard page
+│   ├── css/
+│   │   └── app.css                       # Tailwind CSS styles
+│   └── js/
+│       ├── app.js                        # JavaScript utilities
+│       └── bootstrap.js                  # Axios setup
+│
+├── routes/
+│   ├── web.php                           # Web routes
+│   ├── api.php                           # API routes
+│   └── console.php                       # Console commands
+│
+├── storage/                              # Storage directory
+│   ├── app/                              # Application storage
+│   ├── framework/                        # Framework files
+│   │   ├── cache/                        # Cache files
+│   │   ├── sessions/                     # Session files
+│   │   └── views/                        # Compiled views
+│   └── logs/                             # Log files
+│       └── laravel.log                   # Application logs
+│
+├── tests/
+│   ├── Feature/
+│   │   ├── AuthenticationTest.php        # Auth tests
+│   │   └── ContractManagementTest.php    # CRUD tests
+│   └── Unit/
+│       └── ContractCalculationTest.php   # Calculation tests
+│
+├── vendor/                               # Composer dependencies (auto-generated)
+│
+├── node_modules/                         # NPM dependencies (auto-generated)
+│
+├── .env.example                          # Environment template
+├── .gitignore                            # Git ignore rules
+├── artisan                               # Laravel CLI tool
+├── composer.json                         # PHP dependencies
+├── package.json                          # Node.js dependencies
+├── phpunit.xml                           # PHPUnit configuration
+├── tailwind.config.js                    # Tailwind CSS config
+├── vite.config.js                        # Vite build config
+│
+└── Documentation/
+    ├── README.md                         # Main documentation
+    ├── INSTALLATION.md                   # Installation guide
+    ├── PROJECT_OVERVIEW.md               # Technical overview
+    ├── DELIVERY_SUMMARY.md               # Delivery checklist
+    ├── QUICK_REFERENCE.md                # Quick reference
+    └── DIRECTORY_STRUCTURE.txt           # This file
+
+
+Key Directories Explained
+==========================
+
+app/                    - Core application code (Models, Controllers, Middleware)
+config/                 - Configuration files for various services
+database/               - Migrations, seeders, and schema
+public/                 - Publicly accessible files (entry point, assets)
+resources/              - Views, CSS, JavaScript (source files)
+routes/                 - Route definitions (web, API, console)
+storage/                - Generated files, logs, cache, sessions
+tests/                  - Automated tests (Unit and Feature)
+vendor/                 - Third-party PHP packages (Composer)
+node_modules/           - Third-party JavaScript packages (NPM)
+
+
+Important Files
+===============
+
+.env                    - Environment configuration (create from .env.example)
+composer.json           - PHP dependency definitions
+package.json            - JavaScript dependency definitions
+artisan                 - Laravel command-line interface
+phpunit.xml             - Test configuration
+tailwind.config.js      - Tailwind CSS customization
+vite.config.js          - Frontend build configuration
+
+
+Generated Directories (Not in Git)
+===================================
+
+vendor/                 - Run: composer install
+node_modules/           - Run: npm install
+public/build/           - Run: npm run build
+storage/framework/      - Auto-created by Laravel
+bootstrap/cache/        - Auto-created by Laravel
+
+
+Total Files Delivered: 49
+Total Directories: 30+
+Lines of Code: 5,000+
+
