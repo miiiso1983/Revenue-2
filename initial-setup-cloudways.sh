@@ -18,18 +18,27 @@ NC='\033[0m' # No Color
 # Step 1: Check if .env exists
 echo -e "${YELLOW}📋 Step 1: Checking .env file...${NC}"
 if [ ! -f .env ]; then
-    echo -e "${BLUE}Creating .env file from .env.cloudways...${NC}"
-    cp .env.cloudways .env
-    echo -e "${GREEN}✅ .env file created${NC}"
-    echo -e "${RED}⚠️  IMPORTANT: Edit .env file and add your database credentials!${NC}"
-    echo ""
-    echo -e "${YELLOW}Get database credentials from Cloudways:${NC}"
-    echo "1. Go to Cloudways Dashboard"
-    echo "2. Select your application"
-    echo "3. Go to 'Access Details'"
-    echo "4. Copy Database Name, Username, and Password"
-    echo ""
-    read -p "Press Enter after you've updated the .env file..."
+    if [ -f .env.production ]; then
+        echo -e "${BLUE}Creating .env file from .env.production (with database credentials)...${NC}"
+        cp .env.production .env
+        echo -e "${GREEN}✅ .env file created with database credentials${NC}"
+    elif [ -f .env.cloudways ]; then
+        echo -e "${BLUE}Creating .env file from .env.cloudways...${NC}"
+        cp .env.cloudways .env
+        echo -e "${GREEN}✅ .env file created${NC}"
+        echo -e "${RED}⚠️  IMPORTANT: Edit .env file and add your database credentials!${NC}"
+        echo ""
+        echo -e "${YELLOW}Get database credentials from Cloudways:${NC}"
+        echo "1. Go to Cloudways Dashboard"
+        echo "2. Select your application"
+        echo "3. Go to 'Access Details'"
+        echo "4. Copy Database Name, Username, and Password"
+        echo ""
+        read -p "Press Enter after you've updated the .env file..."
+    else
+        echo -e "${RED}❌ No .env template found${NC}"
+        exit 1
+    fi
 else
     echo -e "${GREEN}✅ .env file already exists${NC}"
 fi
