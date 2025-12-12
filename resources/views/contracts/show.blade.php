@@ -39,6 +39,20 @@
             <p class="text-sm text-gray-600">Total Amount</p>
             <p class="text-lg font-semibold">{{ number_format($contract->amount, 2) }} {{ $contract->currency }}</p>
         </div>
+	        <div>
+	            <p class="text-sm text-gray-600">Discount</p>
+	            <p class="text-lg font-semibold">
+	                @if($contract->discount_type && $contract->discount_value !== null)
+	                    @if($contract->discount_type === 'percentage')
+	                        {{ number_format($contract->discount_value, 2) }}%
+	                    @else
+	                        {{ number_format($contract->discount_value, 2) }} {{ $contract->currency }}
+	                    @endif
+	                @else
+	                    None
+	                @endif
+	            </p>
+	        </div>
         <div>
             <p class="text-sm text-gray-600">Installment Frequency</p>
             <p class="text-lg font-semibold">{{ ucfirst($contract->installment_frequency) }}</p>
@@ -52,13 +66,14 @@
 
 <!-- Monthly Allocations -->
 <div class="card mb-6">
-    <h2 class="text-xl font-bold text-gray-800 mb-4">Monthly Revenue Allocations</h2>
+	    <h2 class="text-xl font-bold text-gray-800 mb-4">Monthly Revenue Allocations</h2>
     <div class="table-container">
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Month</th>
                     <th>Allocated Amount</th>
+	                    <th>Discount Amount</th>
                     <th>Currency</th>
                 </tr>
             </thead>
@@ -67,6 +82,7 @@
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($allocation->month_date)->format('F Y') }}</td>
                     <td>{{ number_format($allocation->allocated_amount, 2) }}</td>
+	                    <td>{{ number_format($allocation->discount_amount, 2) }}</td>
                     <td>{{ $allocation->currency }}</td>
                 </tr>
                 @endforeach

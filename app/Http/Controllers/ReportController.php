@@ -36,7 +36,16 @@ class ReportController extends Controller
         // Generate pivot data
         $pivotData = $this->generatePivotData($startDate, $endDate, $currency, $clientFilter, $appFilter);
 
-        return view('reports.pivot', compact('pivotData', 'startDate', 'endDate', 'currency', 'clientFilter', 'appFilter', 'dataType', 'appNames'));
+        return view('reports.pivot', compact(
+            'pivotData',
+            'startDate',
+            'endDate',
+            'currency',
+            'clientFilter',
+            'appFilter',
+            'dataType',
+            'appNames'
+        ));
     }
 
     /**
@@ -113,25 +122,38 @@ class ReportController extends Controller
                     $clientData[$clientName]['months'][$month] = [
                         'revenue' => 0,
                         'installments' => 0,
+                        'discount' => 0,
                         'currency' => $contract->currency,
                     ];
                 }
                 
-                // Add revenue
+                // Add revenue & discount
                 if (isset($allocations[$month])) {
                     $clientData[$clientName]['months'][$month]['revenue'] += $allocations[$month]->allocated_amount;
+                    $clientData[$clientName]['months'][$month]['discount'] += $allocations[$month]->discount_amount;
                 }
-                
+
                 // Add installments
                 if (isset($installments[$month])) {
                     $clientData[$clientName]['months'][$month]['installments'] += $installments[$month]->installment_amount;
                 }
             }
         }
-        
+
+        // Calculate total discount across all clients and months (for summary)
+        $totalDiscount = 0;
+        foreach ($clientData as $client) {
+            foreach ($months as $month) {
+                if (isset($client['months'][$month])) {
+                    $totalDiscount += $client['months'][$month]['discount'];
+                }
+            }
+        }
+
         return [
             'clients' => array_values($clientData),
             'months' => $months,
+            'total_discount' => $totalDiscount,
         ];
     }
 

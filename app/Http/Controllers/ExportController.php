@@ -97,17 +97,20 @@ class ExportController extends Controller
             $sheet->setCellValue('B' . $currentRow, implode(', ', $client['invoices']));
 
             $colIndex = 3; // Column C
-            foreach ($pivotData['months'] as $month) {
-                $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0];
+                foreach ($pivotData['months'] as $month) {
+                    $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0];
 
-                // Build cell value based on data type filter
-                $cellParts = [];
+                    // Build cell value based on data type filter
+                    $cellParts = [];
                 if (in_array($dataType, ['both', 'revenue'])) {
                     $cellParts[] = "Rev: " . number_format($monthData['revenue'], 2);
                 }
                 if (in_array($dataType, ['both', 'installments'])) {
                     $cellParts[] = "Inst: " . number_format($monthData['installments'], 2);
                 }
+                    if ($monthData['discount'] > 0) {
+                        $cellParts[] = "Disc: " . number_format($monthData['discount'], 2);
+                    }
                 $cellValue = implode("\n", $cellParts);
 
                 $sheet->setCellValueByColumnAndRow($colIndex, $currentRow, $cellValue);
@@ -201,12 +204,14 @@ class ExportController extends Controller
                     $clientData[$clientName]['months'][$month] = [
                         'revenue' => 0,
                         'installments' => 0,
+                        'discount' => 0,
                         'currency' => $contract->currency,
                     ];
                 }
-                
+
                 if (isset($allocations[$month])) {
                     $clientData[$clientName]['months'][$month]['revenue'] += $allocations[$month]->allocated_amount;
+                    $clientData[$clientName]['months'][$month]['discount'] += $allocations[$month]->discount_amount;
                 }
                 
                 if (isset($installments[$month])) {
@@ -214,7 +219,7 @@ class ExportController extends Controller
                 }
             }
         }
-        
+
         return [
             'clients' => array_values($clientData),
             'months' => $months,

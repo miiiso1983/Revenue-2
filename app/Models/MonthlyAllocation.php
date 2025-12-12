@@ -18,6 +18,7 @@ class MonthlyAllocation extends Model
         'contract_id',
         'month_date',
         'allocated_amount',
+        'discount_amount',
         'currency',
     ];
 
@@ -29,6 +30,7 @@ class MonthlyAllocation extends Model
     protected $casts = [
         'month_date' => 'date',
         'allocated_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
     ];
 
     /**

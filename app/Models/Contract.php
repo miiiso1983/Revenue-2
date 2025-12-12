@@ -24,6 +24,8 @@ class Contract extends Model
         'amount',
         'currency',
         'installment_frequency',
+        'discount_type',
+        'discount_value',
         'created_by',
     ];
 
@@ -36,6 +38,7 @@ class Contract extends Model
         'invoice_date' => 'date',
         'amount' => 'decimal:2',
         'duration_months' => 'integer',
+        'discount_value' => 'decimal:2',
     ];
 
     /**
@@ -53,7 +56,14 @@ class Contract extends Model
 
         // Regenerate allocations and installments when contract is updated
         static::updated(function ($contract) {
-            if ($contract->isDirty(['amount', 'duration_months', 'invoice_date', 'installment_frequency'])) {
+            if ($contract->isDirty([
+                'amount',
+                'duration_months',
+                'invoice_date',
+                'installment_frequency',
+                'discount_type',
+                'discount_value',
+            ])) {
                 $contract->monthlyAllocations()->delete();
                 $contract->installments()->delete();
                 $contract->generateMonthlyAllocations();
@@ -92,15 +102,35 @@ class Contract extends Model
     public function generateMonthlyAllocations(): void
     {
         $monthlyAmount = $this->amount / $this->duration_months;
+
+        // Calculate total discount for the whole contract
+        $discountTotal = 0;
+        if ($this->discount_type && $this->discount_value !== null) {
+            if ($this->discount_type === 'percentage') {
+                $discountTotal = ($this->amount * (float) $this->discount_value) / 100;
+            } elseif ($this->discount_type === 'fixed') {
+                $discountTotal = (float) $this->discount_value;
+            }
+
+            // Do not allow discount to exceed total amount
+            if ($discountTotal > $this->amount) {
+                $discountTotal = $this->amount;
+            }
+        }
+
+        $monthlyDiscount = $this->duration_months > 0
+            ? $discountTotal / $this->duration_months
+            : 0;
         $startDate = Carbon::parse($this->invoice_date)->startOfMonth();
 
         for ($i = 0; $i < $this->duration_months; $i++) {
             $monthDate = $startDate->copy()->addMonths($i);
-            
+
             MonthlyAllocation::create([
                 'contract_id' => $this->id,
                 'month_date' => $monthDate->format('Y-m-01'),
                 'allocated_amount' => round($monthlyAmount, 2),
+                'discount_amount' => round($monthlyDiscount, 2),
                 'currency' => $this->currency,
             ]);
         }

@@ -105,6 +105,29 @@
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
+
+	            <!-- Discount Type (optional) -->
+	            <div>
+	                <label for="discount_type" class="label">Discount Type</label>
+	                <select id="discount_type" name="discount_type" class="input-field">
+	                    <option value="">No Discount</option>
+	                    <option value="percentage" {{ old('discount_type') == 'percentage' ? 'selected' : '' }}>Percentage (%)</option>
+	                    <option value="fixed" {{ old('discount_type') == 'fixed' ? 'selected' : '' }}>Fixed Amount</option>
+	                </select>
+	                @error('discount_type')
+	                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+	                @enderror
+	            </div>
+
+	            <!-- Discount Value (optional) -->
+	            <div>
+	                <label for="discount_value" class="label">Discount Value</label>
+	                <input type="number" id="discount_value" name="discount_value" value="{{ old('discount_value') }}"
+	                       step="0.01" min="0" class="input-field">
+	                @error('discount_value')
+	                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+	                @enderror
+	            </div>
         </div>
 
         <!-- Buttons -->

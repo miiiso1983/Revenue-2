@@ -65,6 +65,8 @@ class ContractController extends Controller
             'amount' => 'required|numeric|min:0',
             'currency' => 'required|in:USD,IQD',
             'installment_frequency' => 'required|in:monthly,quarterly,yearly',
+                'discount_type' => 'nullable|in:percentage,fixed',
+                'discount_value' => 'nullable|numeric|min:0',
         ]);
         
         $validated['created_by'] = auth()->id();
@@ -119,6 +121,8 @@ class ContractController extends Controller
             'amount' => 'required|numeric|min:0',
             'currency' => 'required|in:USD,IQD',
             'installment_frequency' => 'required|in:monthly,quarterly,yearly',
+                'discount_type' => 'nullable|in:percentage,fixed',
+                'discount_value' => 'nullable|numeric|min:0',
         ]);
         
         DB::beginTransaction();

@@ -85,7 +85,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($pivotData['clients'] as $client)
+	                @foreach($pivotData['clients'] as $client)
             <tr class="hover:bg-gray-50">
                 <td class="border px-4 py-2 font-semibold">{{ $client['client_name'] }}</td>
                 <td class="border px-4 py-2 text-sm">
@@ -94,13 +94,16 @@
                 @foreach($pivotData['months'] as $month)
                 <td class="border px-4 py-2 text-sm">
                     @php
-                        $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'currency' => ''];
+	                        $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0, 'currency' => ''];
                         $showRevenue = in_array($dataType, ['both', 'revenue']);
                         $showInstallments = in_array($dataType, ['both', 'installments']);
-                        $hasData = ($showRevenue && $monthData['revenue'] > 0) || ($showInstallments && $monthData['installments'] > 0);
+	                        $hasDiscount = $monthData['discount'] > 0;
+	                        $hasData = ($showRevenue && $monthData['revenue'] > 0)
+	                            || ($showInstallments && $monthData['installments'] > 0)
+	                            || $hasDiscount;
                     @endphp
                     @if($hasData)
-                    <div class="text-center">
+	                        <div class="text-center">
                         @if($showRevenue)
                         <div class="text-blue-600 font-semibold">
                             Rev: {{ number_format($monthData['revenue'], 2) }}
@@ -111,6 +114,11 @@
                             Inst: {{ number_format($monthData['installments'], 2) }}
                         </div>
                         @endif
+	                            @if($monthData['discount'] > 0)
+	                            <div class="text-red-600">
+	                                Disc: {{ number_format($monthData['discount'], 2) }}
+	                            </div>
+	                            @endif
                         <div class="text-xs text-gray-500">{{ $monthData['currency'] }}</div>
                     </div>
                     @else
@@ -142,8 +150,27 @@
             <span class="text-green-600 font-semibold">Inst:</span> 
             <span class="text-gray-700">Installment amount due in that month</span>
         </div>
+	        <div>
+	            <span class="text-red-600 font-semibold">Disc:</span> 
+	            <span class="text-gray-700">Discount amount allocated to that month</span>
+	        </div>
     </div>
 </div>
+
+@if(isset($pivotData['total_discount']))
+	<div class="card mt-4">
+	    <h3 class="font-bold text-gray-800 mb-2">Total Discounts for Selected Period:</h3>
+	    <p class="text-lg font-semibold">
+	        {{ number_format($pivotData['total_discount'], 2) }}
+	        @if($currency)
+	            {{ $currency }}
+	        @endif
+	    </p>
+	    @if(!$currency)
+	        <p class="text-xs text-gray-500 mt-1">Note: Total may include multiple currencies. Use the Currency filter for a single-currency total.</p>
+	    @endif
+	</div>
+@endif
 
 <style>
     @media print {
