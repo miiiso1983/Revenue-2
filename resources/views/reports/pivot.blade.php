@@ -85,51 +85,139 @@
                 @endforeach
             </tr>
         </thead>
-        <tbody>
-	                @foreach($pivotData['clients'] as $client)
-            <tr class="hover:bg-gray-50">
-                <td class="border px-4 py-2 font-semibold">{{ $client['client_name'] }}</td>
-                <td class="border px-4 py-2 text-sm">
-                    {{ implode(', ', $client['invoices']) }}
-                </td>
-                @foreach($pivotData['months'] as $month)
-                <td class="border px-4 py-2 text-sm">
-                    @php
+	        <tbody>
+	            @foreach($pivotData['clients'] as $client)
+	            <tr class="hover:bg-gray-50">
+	                <td class="border px-4 py-2 font-semibold">{{ $client['client_name'] }}</td>
+	                <td class="border px-4 py-2 text-sm">
+	                    {{ implode(', ', $client['invoices']) }}
+	                </td>
+	                @foreach($pivotData['months'] as $month)
+	                <td class="border px-4 py-2 text-sm">
+	                    @php
 	                        $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0, 'currency' => ''];
-                        $showRevenue = in_array($dataType, ['both', 'revenue']);
-                        $showInstallments = in_array($dataType, ['both', 'installments']);
+	                        $showRevenue = in_array($dataType, ['both', 'revenue']);
+	                        $showInstallments = in_array($dataType, ['both', 'installments']);
 	                        $hasDiscount = $monthData['discount'] > 0;
 	                        $hasData = ($showRevenue && $monthData['revenue'] > 0)
 	                            || ($showInstallments && $monthData['installments'] > 0)
 	                            || $hasDiscount;
-                    @endphp
-                    @if($hasData)
+	                    @endphp
+	                    @if($hasData)
 	                        <div class="text-center">
-                        @if($showRevenue)
-                        <div class="text-blue-600 font-semibold">
-                            Rev: {{ number_format($monthData['revenue'], 2) }}
-                        </div>
-                        @endif
-                        @if($showInstallments)
-                        <div class="text-green-600">
-                            Inst: {{ number_format($monthData['installments'], 2) }}
-                        </div>
-                        @endif
+	                            @if($showRevenue)
+	                            <div class="text-blue-600 font-semibold">
+	                                Rev: {{ number_format($monthData['revenue'], 2) }}
+	                            </div>
+	                            @endif
+	                            @if($showInstallments)
+	                            <div class="text-green-600">
+	                                Inst: {{ number_format($monthData['installments'], 2) }}
+	                            </div>
+	                            @endif
 	                            @if($monthData['discount'] > 0)
 	                            <div class="text-red-600">
 	                                Disc: {{ number_format($monthData['discount'], 2) }}
 	                            </div>
 	                            @endif
-                        <div class="text-xs text-gray-500">{{ $monthData['currency'] }}</div>
-                    </div>
-                    @else
-                    <div class="text-center text-gray-400">-</div>
-                    @endif
-                </td>
-                @endforeach
-            </tr>
-            @endforeach
-        </tbody>
+	                            <div class="text-xs text-gray-500">{{ $monthData['currency'] }}</div>
+	                        </div>
+	                    @else
+	                        <div class="text-center text-gray-400">-</div>
+	                    @endif
+	                </td>
+	                @endforeach
+	            </tr>
+	            @endforeach
+
+	            <!-- Total Row -->
+	            <tr class="bg-indigo-50 font-bold">
+	                <td class="border px-4 py-2 text-right">Total</td>
+	                <td class="border px-4 py-2"></td>
+	                @foreach($pivotData['months'] as $month)
+	                <td class="border px-4 py-2 text-sm bg-indigo-50">
+	                    @php
+	                        $monthTotals = $pivotData['month_totals'][$month] ?? [
+	                            'by_currency' => [],
+	                            'all' => ['revenue' => 0, 'installments' => 0, 'discount' => 0],
+	                        ];
+	                        $showRevenueTotal      = in_array($dataType, ['both', 'revenue']);
+	                        $showInstallmentsTotal = in_array($dataType, ['both', 'installments']);
+	                        $showDiscountTotal     = in_array($dataType, ['both', 'discount']);
+	                        $allTotals = $monthTotals['all'];
+	                        $hasAnyTotal = ($showRevenueTotal && $allTotals['revenue'] > 0)
+	                            || ($showInstallmentsTotal && $allTotals['installments'] > 0)
+	                            || ($showDiscountTotal && $allTotals['discount'] > 0);
+	                    @endphp
+
+	                    @if($hasAnyTotal)
+	                        @if($currency)
+	                            @php
+	                                $vals = $monthTotals['by_currency'][$currency] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0];
+	                                $hasCurrencyTotal = ($showRevenueTotal && $vals['revenue'] > 0)
+	                                    || ($showInstallmentsTotal && $vals['installments'] > 0)
+	                                    || ($showDiscountTotal && $vals['discount'] > 0);
+	                            @endphp
+	                            @if($hasCurrencyTotal)
+	                                <div class="text-center">
+	                                    @if($showRevenueTotal && $vals['revenue'] > 0)
+	                                        <div class="text-blue-700">
+	                                            Rev: {{ number_format($vals['revenue'], 2) }}
+	                                        </div>
+	                                    @endif
+	                                    @if($showInstallmentsTotal && $vals['installments'] > 0)
+	                                        <div class="text-green-700">
+	                                            Inst: {{ number_format($vals['installments'], 2) }}
+	                                        </div>
+	                                    @endif
+	                                    @if($showDiscountTotal && $vals['discount'] > 0)
+	                                        <div class="text-red-700">
+	                                            Disc: {{ number_format($vals['discount'], 2) }}
+	                                        </div>
+	                                    @endif
+	                                    <div class="text-xs text-gray-500">{{ $currency }}</div>
+	                                </div>
+	                            @else
+	                                <div class="text-center text-gray-400">-</div>
+	                            @endif
+	                        @else
+	                            <div class="text-center text-xs space-y-1">
+	                                @foreach($monthTotals['by_currency'] as $cur => $vals)
+	                                    @php
+	                                        $lineHasData = ($showRevenueTotal && $vals['revenue'] > 0)
+	                                            || ($showInstallmentsTotal && $vals['installments'] > 0)
+	                                            || ($showDiscountTotal && $vals['discount'] > 0);
+	                                    @endphp
+	                                    @if($lineHasData)
+	                                        <div class="mb-1">
+	                                            <div class="font-semibold text-gray-700">{{ $cur }}</div>
+	                                            @if($showRevenueTotal && $vals['revenue'] > 0)
+	                                                <div class="text-blue-700">
+	                                                    Rev: {{ number_format($vals['revenue'], 2) }}
+	                                                </div>
+	                                            @endif
+	                                            @if($showInstallmentsTotal && $vals['installments'] > 0)
+	                                                <div class="text-green-700">
+	                                                    Inst: {{ number_format($vals['installments'], 2) }}
+	                                                </div>
+	                                            @endif
+	                                            @if($showDiscountTotal && $vals['discount'] > 0)
+	                                                <div class="text-red-700">
+	                                                    Disc: {{ number_format($vals['discount'], 2) }}
+	                                                </div>
+	                                            @endif
+	                                        </div>
+	                                    @endif
+	                                @endforeach
+	                            </div>
+	                        @endif
+	                    @else
+	                        <div class="text-center text-gray-400">-</div>
+	                    @endif
+	                </td>
+	                @endforeach
+	            </tr>
+	        </tbody>
     </table>
     @else
     <div class="text-center py-12 text-gray-500">

@@ -63,6 +63,19 @@ class ReportController extends Controller
             $months[] = $current->format('Y-m-d');
             $current->addMonth();
         }
+
+        // Initialize monthly totals (across all clients)
+        $monthTotals = [];
+        foreach ($months as $month) {
+            $monthTotals[$month] = [
+                'by_currency' => [], // e.g. ['USD' => ['revenue' => ..., 'installments' => ..., 'discount' => ...]]
+                'all' => [
+                    'revenue'      => 0,
+                    'installments' => 0,
+                    'discount'     => 0,
+                ],
+            ];
+        }
         
         // Get contracts with filters
         $contractsQuery = Contract::query();
@@ -86,6 +99,7 @@ class ReportController extends Controller
         
         foreach ($contracts as $contract) {
             $clientName = $contract->client_name;
+            $contractCurrency = $contract->currency;
             
             if (!isset($clientData[$clientName])) {
                 $clientData[$clientName] = [
@@ -116,7 +130,7 @@ class ReportController extends Controller
                     return Carbon::parse($item->due_date)->startOfDay()->format('Y-m-d');
                 });
             
-            // Populate month data
+            // Populate month data and accumulate totals
             foreach ($months as $month) {
                 if (!isset($clientData[$clientName]['months'][$month])) {
                     $clientData[$clientName]['months'][$month] = [
@@ -127,33 +141,53 @@ class ReportController extends Controller
                     ];
                 }
                 
+                // Ensure month totals structure for this currency exists
+                if (!isset($monthTotals[$month]['by_currency'][$contractCurrency])) {
+                    $monthTotals[$month]['by_currency'][$contractCurrency] = [
+                        'revenue'      => 0,
+                        'installments' => 0,
+                        'discount'     => 0,
+                    ];
+                }
+
                 // Add revenue & discount
                 if (isset($allocations[$month])) {
-                    $clientData[$clientName]['months'][$month]['revenue'] += $allocations[$month]->allocated_amount;
-                    $clientData[$clientName]['months'][$month]['discount'] += $allocations[$month]->discount_amount;
+                    $allocatedAmount = $allocations[$month]->allocated_amount;
+                    $discountAmount  = $allocations[$month]->discount_amount;
+
+                    $clientData[$clientName]['months'][$month]['revenue']  += $allocatedAmount;
+                    $clientData[$clientName]['months'][$month]['discount'] += $discountAmount;
+
+                    $monthTotals[$month]['by_currency'][$contractCurrency]['revenue']  += $allocatedAmount;
+                    $monthTotals[$month]['by_currency'][$contractCurrency]['discount'] += $discountAmount;
+
+                    $monthTotals[$month]['all']['revenue']  += $allocatedAmount;
+                    $monthTotals[$month]['all']['discount'] += $discountAmount;
                 }
 
                 // Add installments
                 if (isset($installments[$month])) {
-                    $clientData[$clientName]['months'][$month]['installments'] += $installments[$month]->installment_amount;
+                    $installmentAmount = $installments[$month]->installment_amount;
+
+                    $clientData[$clientName]['months'][$month]['installments'] += $installmentAmount;
+
+                    $monthTotals[$month]['by_currency'][$contractCurrency]['installments'] += $installmentAmount;
+                    $monthTotals[$month]['all']['installments'] += $installmentAmount;
                 }
             }
         }
 
         // Calculate total discount across all clients and months (for summary)
         $totalDiscount = 0;
-        foreach ($clientData as $client) {
-            foreach ($months as $month) {
-                if (isset($client['months'][$month])) {
-                    $totalDiscount += $client['months'][$month]['discount'];
-                }
-            }
+        foreach ($monthTotals as $month => $totals) {
+            $totalDiscount += $totals['all']['discount'];
         }
 
         return [
             'clients' => array_values($clientData),
             'months' => $months,
             'total_discount' => $totalDiscount,
+            'month_totals' => $monthTotals,
         ];
     }
 
