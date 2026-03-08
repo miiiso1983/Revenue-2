@@ -67,6 +67,13 @@ class AuthenticationTest extends TestCase
     }
 
     /** @test */
+    public function guest_can_access_login_page_by_root_and_login_url()
+    {
+        $this->get(route('login'))->assertStatus(200);
+        $this->get('/login')->assertStatus(200);
+    }
+
+    /** @test */
     public function guest_cannot_access_dashboard()
     {
         $response = $this->get(route('dashboard'));
