@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
@@ -30,6 +29,9 @@ class ExportController extends Controller
 
         // Generate pivot data
         $pivotData = $this->generatePivotData($startDate, $endDate, $currency, $clientFilter, $appFilter);
+        $showRevenue = in_array($dataType, ['both', 'revenue'], true);
+        $showInstallments = in_array($dataType, ['both', 'installments'], true);
+        $showDiscount = in_array($dataType, ['both', 'discount'], true);
         
         // Create spreadsheet
         $spreadsheet = new Spreadsheet();
@@ -106,20 +108,20 @@ class ExportController extends Controller
             $sheet->setCellValue('B' . $currentRow, implode(', ', $client['invoices']));
 
             $colIndex = 3; // Column C
-                foreach ($pivotData['months'] as $month) {
-                    $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0];
+            foreach ($pivotData['months'] as $month) {
+                $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0];
 
-                    // Build cell value based on data type filter
-                    $cellParts = [];
-                if (in_array($dataType, ['both', 'revenue'])) {
+                // Build cell value based on data type filter
+                $cellParts = [];
+                if ($showRevenue) {
                     $cellParts[] = "Rev: " . number_format($monthData['revenue'], 2);
                 }
-                if (in_array($dataType, ['both', 'installments'])) {
+                if ($showInstallments) {
                     $cellParts[] = "Inst: " . number_format($monthData['installments'], 2);
                 }
-                    if ($monthData['discount'] > 0) {
-                        $cellParts[] = "Disc: " . number_format($monthData['discount'], 2);
-                    }
+                if ($showDiscount && $monthData['discount'] > 0) {
+                    $cellParts[] = "Disc: " . number_format($monthData['discount'], 2);
+                }
                 $cellValue = implode("\n", $cellParts);
 
                 $sheet->setCellValueByColumnAndRow($colIndex, $currentRow, $cellValue);
@@ -152,8 +154,8 @@ class ExportController extends Controller
      */
     private function generatePivotData($startDate, $endDate, $currency = '', $clientFilter = '', $appFilter = '')
     {
-        $start = Carbon::parse($startDate . '-01');
-        $end = Carbon::parse($endDate . '-01');
+        $start = Carbon::parse("{$startDate}-01")->startOfMonth();
+        $end = Carbon::parse("{$endDate}-01")->startOfMonth();
         
         $months = [];
         $current = $start->copy();
@@ -162,70 +164,72 @@ class ExportController extends Controller
             $current->addMonth();
         }
         
-        $contractsQuery = Contract::query();
+        $contractsQuery = Contract::query()
+            ->with([
+                'monthlyAllocations' => fn ($query) => $query
+                    ->whereBetween('month_date', [$start->toDateString(), $end->toDateString()])
+                    ->orderBy('month_date'),
+                'installments' => fn ($query) => $query
+                    ->whereBetween('due_date', [$start->toDateString(), $end->toDateString()])
+                    ->orderBy('due_date'),
+            ])
+            ->whereDate('invoice_date', '<=', $end->toDateString());
         
         if ($currency) {
             $contractsQuery->where('currency', $currency);
         }
         
         if ($clientFilter) {
-            $contractsQuery->where('client_name', 'like', '%' . $clientFilter . '%');
+            $contractsQuery->where('client_name', 'like', "%{$clientFilter}%");
         }
         
         if ($appFilter) {
-            $contractsQuery->where('app_name', 'like', '%' . $appFilter . '%');
+            $contractsQuery->where('app_name', 'like', "%{$appFilter}%");
         }
         
-        $contracts = $contractsQuery->get();
+        $contracts = $contractsQuery
+            ->orderBy('client_name')
+            ->orderBy('invoice_date')
+            ->orderBy('invoice_number')
+            ->get()
+            ->filter(fn (Contract $contract) => $this->contractOverlapsRange($contract, $start, $end))
+            ->values();
+
         $clientData = [];
         
         foreach ($contracts as $contract) {
-            $clientName = $contract->client_name;
-            
-            if (!isset($clientData[$clientName])) {
-                $clientData[$clientName] = [
-                    'client_name' => $clientName,
-                    'invoices' => [],
-                    'months' => [],
-                ];
-            }
-            
-            if (!in_array($contract->invoice_number, $clientData[$clientName]['invoices'])) {
-                $clientData[$clientName]['invoices'][] = $contract->invoice_number;
-            }
-            
-            $allocations = MonthlyAllocation::where('contract_id', $contract->id)
-                ->whereBetween('month_date', [$start->format('Y-m-01'), $end->format('Y-m-01')])
-                ->get()
-                ->keyBy(function($item) {
-                    return Carbon::parse($item->month_date)->format('Y-m-d');
-                });
+            $rowKey = (string) $contract->getKey();
+            $clientName = (string) $contract->client_name;
 
-            $installments = Installment::where('contract_id', $contract->id)
-                ->whereBetween('due_date', [$start->format('Y-m-01'), $end->format('Y-m-01')])
-                ->get()
-                ->keyBy(function($item) {
-                    return Carbon::parse($item->due_date)->format('Y-m-d');
-                });
-            
+            $clientData[$rowKey] = [
+                'client_name' => $clientName,
+                'invoices' => [(string) $contract->invoice_number],
+                'months' => [],
+            ];
+
+            $allocations = $contract->monthlyAllocations
+                ->groupBy(fn (MonthlyAllocation $item) => Carbon::parse($item->month_date)->startOfDay()->format('Y-m-d'))
+                ->map(fn ($items) => [
+                    'revenue' => (float) $items->sum(fn (MonthlyAllocation $item) => (float) $item->allocated_amount),
+                    'discount' => (float) $items->sum(fn (MonthlyAllocation $item) => (float) $item->discount_amount),
+                ]);
+
+            $installments = $contract->installments
+                ->groupBy(fn (Installment $item) => Carbon::parse($item->due_date)->startOfDay()->format('Y-m-d'))
+                ->map(fn ($items) => (float) $items->sum(fn (Installment $item) => (float) $item->installment_amount));
+
             foreach ($months as $month) {
-                if (!isset($clientData[$clientName]['months'][$month])) {
-                    $clientData[$clientName]['months'][$month] = [
-                        'revenue' => 0,
-                        'installments' => 0,
-                        'discount' => 0,
-                        'currency' => $contract->currency,
-                    ];
-                }
+                $clientData[$rowKey]['months'][$month] = [
+                    'revenue' => 0,
+                    'installments' => 0,
+                    'discount' => 0,
+                    'currency' => (string) $contract->currency,
+                ];
 
-                if (isset($allocations[$month])) {
-                    $clientData[$clientName]['months'][$month]['revenue'] += $allocations[$month]->allocated_amount;
-                    $clientData[$clientName]['months'][$month]['discount'] += $allocations[$month]->discount_amount;
-                }
-                
-                if (isset($installments[$month])) {
-                    $clientData[$clientName]['months'][$month]['installments'] += $installments[$month]->installment_amount;
-                }
+                $allocationValues = $allocations->get($month, ['revenue' => 0, 'discount' => 0]);
+                $clientData[$rowKey]['months'][$month]['revenue'] = (float) $allocationValues['revenue'];
+                $clientData[$rowKey]['months'][$month]['discount'] = (float) $allocationValues['discount'];
+                $clientData[$rowKey]['months'][$month]['installments'] = (float) $installments->get($month, 0);
             }
         }
 
@@ -233,6 +237,17 @@ class ExportController extends Controller
             'clients' => array_values($clientData),
             'months' => $months,
         ];
+    }
+
+    private function contractOverlapsRange(Contract $contract, Carbon $start, Carbon $end): bool
+    {
+        $contractStart = Carbon::parse($contract->invoice_date)->startOfMonth();
+        $contractEnd = $contractStart
+            ->copy()
+            ->addMonths(max(((int) $contract->duration_months) - 1, 0))
+            ->startOfMonth();
+
+        return $contractStart <= $end && $contractEnd >= $start;
     }
 }
 
