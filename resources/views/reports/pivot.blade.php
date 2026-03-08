@@ -98,10 +98,10 @@
 	                        $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0, 'currency' => ''];
 	                        $showRevenue = in_array($dataType, ['both', 'revenue']);
 	                        $showInstallments = in_array($dataType, ['both', 'installments']);
-	                        $hasDiscount = $monthData['discount'] > 0;
-	                        $hasData = ($showRevenue && $monthData['revenue'] > 0)
-	                            || ($showInstallments && $monthData['installments'] > 0)
-	                            || $hasDiscount;
+		                        $showDiscount = in_array($dataType, ['both', 'discount']);
+		                        $hasData = ($showRevenue && $monthData['revenue'] > 0)
+		                            || ($showInstallments && $monthData['installments'] > 0)
+		                            || ($showDiscount && $monthData['discount'] > 0);
 	                    @endphp
 	                    @if($hasData)
 	                        <div class="text-center">
@@ -115,7 +115,7 @@
 	                                Inst: {{ number_format($monthData['installments'], 2) }}
 	                            </div>
 	                            @endif
-	                            @if($monthData['discount'] > 0)
+		                            @if($showDiscount && $monthData['discount'] > 0)
 	                            <div class="text-red-600">
 	                                Disc: {{ number_format($monthData['discount'], 2) }}
 	                            </div>
