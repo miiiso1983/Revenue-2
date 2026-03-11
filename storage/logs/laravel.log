@@ -363,3 +363,21 @@
 #18 /Users/mustafaaljaf/Revenue 2/artisan(24): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
 #19 {main}
 "} 
+[2026-03-11 12:40:27] local.ERROR: Command "config:clear01~" is not defined.
+
+Did you mean one of these?
+    config:cache
+    config:clear
+    config:show {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \"config:clear01~\" is not defined.
+
+Did you mean one of these?
+    config:cache
+    config:clear
+    config:show at /Users/mustafaaljaf/Revenue 2/vendor/symfony/console/Application.php:745)
+[stacktrace]
+#0 /Users/mustafaaljaf/Revenue 2/vendor/symfony/console/Application.php(266): Symfony\\Component\\Console\\Application->find('config:clear01~')
+#1 /Users/mustafaaljaf/Revenue 2/vendor/symfony/console/Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#2 /Users/mustafaaljaf/Revenue 2/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#3 /Users/mustafaaljaf/Revenue 2/artisan(24): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#4 {main}
+"} 
