@@ -13,27 +13,37 @@ class DashboardController extends Controller
     /**
      * Display dashboard with summary statistics
      */
-    public function index()
+    public function index(Request $request)
     {
-        $currentMonth = Carbon::now()->format('Y-m-01');
+        $selectedPeriod = $request->input('period', Carbon::now()->format('Y-m'));
+
+        try {
+            $selectedMonth = Carbon::createFromFormat('Y-m', $selectedPeriod)->startOfMonth();
+        } catch (\Throwable $exception) {
+            $selectedMonth = Carbon::now()->startOfMonth();
+        }
+
+        $selectedPeriod = $selectedMonth->format('Y-m');
+        $selectedPeriodLabel = $selectedMonth->format('F Y');
+        $selectedMonthDate = $selectedMonth->toDateString();
         
-        // Total revenue for current month
-        $currentMonthRevenueUSD = MonthlyAllocation::where('month_date', $currentMonth)
+        // Total revenue for selected month
+        $selectedMonthRevenueUSD = MonthlyAllocation::whereDate('month_date', $selectedMonthDate)
             ->where('currency', 'USD')
             ->sum('allocated_amount');
             
-        $currentMonthRevenueIQD = MonthlyAllocation::where('month_date', $currentMonth)
+        $selectedMonthRevenueIQD = MonthlyAllocation::whereDate('month_date', $selectedMonthDate)
             ->where('currency', 'IQD')
             ->sum('allocated_amount');
         
-        // Total installments due this month
-        $currentMonthInstallmentsUSD = Installment::whereYear('due_date', Carbon::now()->year)
-            ->whereMonth('due_date', Carbon::now()->month)
+        // Total installments due for selected month
+        $selectedMonthInstallmentsUSD = Installment::whereYear('due_date', $selectedMonth->year)
+            ->whereMonth('due_date', $selectedMonth->month)
             ->where('currency', 'USD')
             ->sum('installment_amount');
             
-        $currentMonthInstallmentsIQD = Installment::whereYear('due_date', Carbon::now()->year)
-            ->whereMonth('due_date', Carbon::now()->month)
+        $selectedMonthInstallmentsIQD = Installment::whereYear('due_date', $selectedMonth->year)
+            ->whereMonth('due_date', $selectedMonth->month)
             ->where('currency', 'IQD')
             ->sum('installment_amount');
         
@@ -43,10 +53,6 @@ class DashboardController extends Controller
         // Active contracts
         $activeContracts = Contract::count();
         
-        // Total revenue by currency
-        $totalRevenueUSD = Contract::where('currency', 'USD')->sum('amount');
-        $totalRevenueIQD = Contract::where('currency', 'IQD')->sum('amount');
-        
         // Recent contracts
         $recentContracts = Contract::with('creator')
             ->orderBy('created_at', 'desc')
@@ -54,14 +60,14 @@ class DashboardController extends Controller
             ->get();
         
         return view('dashboard', compact(
-            'currentMonthRevenueUSD',
-            'currentMonthRevenueIQD',
-            'currentMonthInstallmentsUSD',
-            'currentMonthInstallmentsIQD',
+            'selectedPeriod',
+            'selectedPeriodLabel',
+            'selectedMonthRevenueUSD',
+            'selectedMonthRevenueIQD',
+            'selectedMonthInstallmentsUSD',
+            'selectedMonthInstallmentsIQD',
             'activeClients',
             'activeContracts',
-            'totalRevenueUSD',
-            'totalRevenueIQD',
             'recentContracts'
         ));
     }

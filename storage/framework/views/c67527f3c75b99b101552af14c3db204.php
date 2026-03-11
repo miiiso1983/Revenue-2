@@ -1,18 +1,16 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Dashboard'); ?>
 
-@section('title', 'Dashboard')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
     <p class="text-gray-600 mt-1">Overview of revenue and installments</p>
 </div>
 
 <div class="card mb-6">
-    <form action="{{ route('dashboard') }}" method="GET" class="flex flex-col sm:flex-row sm:items-end gap-4">
+    <form action="<?php echo e(route('dashboard')); ?>" method="GET" class="flex flex-col sm:flex-row sm:items-end gap-4">
         <div>
             <label class="label">Revenue Period</label>
-            <input type="month" name="period" value="{{ $selectedPeriod }}" class="input-field">
+            <input type="month" name="period" value="<?php echo e($selectedPeriod); ?>" class="input-field">
         </div>
         <div>
             <button type="submit" class="btn-primary">Apply</button>
@@ -26,8 +24,8 @@
     <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-blue-100 text-sm">Revenue for {{ $selectedPeriodLabel }} (USD)</p>
-                <p class="text-3xl font-bold mt-2">${{ number_format($selectedMonthRevenueUSD, 2) }}</p>
+                <p class="text-blue-100 text-sm">Revenue for <?php echo e($selectedPeriodLabel); ?> (USD)</p>
+                <p class="text-3xl font-bold mt-2">$<?php echo e(number_format($selectedMonthRevenueUSD, 2)); ?></p>
             </div>
             <svg class="w-12 h-12 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -39,8 +37,8 @@
     <div class="card bg-gradient-to-br from-green-500 to-green-600 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-green-100 text-sm">Revenue for {{ $selectedPeriodLabel }} (IQD)</p>
-                <p class="text-3xl font-bold mt-2">{{ number_format($selectedMonthRevenueIQD, 0) }}</p>
+                <p class="text-green-100 text-sm">Revenue for <?php echo e($selectedPeriodLabel); ?> (IQD)</p>
+                <p class="text-3xl font-bold mt-2"><?php echo e(number_format($selectedMonthRevenueIQD, 0)); ?></p>
             </div>
             <svg class="w-12 h-12 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -52,8 +50,8 @@
     <div class="card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-purple-100 text-sm">Due Installments for {{ $selectedPeriodLabel }} (USD)</p>
-                <p class="text-3xl font-bold mt-2">${{ number_format($selectedMonthInstallmentsUSD, 2) }}</p>
+                <p class="text-purple-100 text-sm">Due Installments for <?php echo e($selectedPeriodLabel); ?> (USD)</p>
+                <p class="text-3xl font-bold mt-2">$<?php echo e(number_format($selectedMonthInstallmentsUSD, 2)); ?></p>
             </div>
             <svg class="w-12 h-12 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -65,8 +63,8 @@
     <div class="card bg-gradient-to-br from-orange-500 to-orange-600 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-orange-100 text-sm">Due Installments for {{ $selectedPeriodLabel }} (IQD)</p>
-                <p class="text-3xl font-bold mt-2">{{ number_format($selectedMonthInstallmentsIQD, 0) }}</p>
+                <p class="text-orange-100 text-sm">Due Installments for <?php echo e($selectedPeriodLabel); ?> (IQD)</p>
+                <p class="text-3xl font-bold mt-2"><?php echo e(number_format($selectedMonthInstallmentsIQD, 0)); ?></p>
             </div>
             <svg class="w-12 h-12 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -79,18 +77,18 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <div class="card">
         <h3 class="text-lg font-semibold text-gray-700 mb-2">Active Clients</h3>
-        <p class="text-4xl font-bold text-blue-600">{{ $activeClients }}</p>
+        <p class="text-4xl font-bold text-blue-600"><?php echo e($activeClients); ?></p>
     </div>
 
     <div class="card">
         <h3 class="text-lg font-semibold text-gray-700 mb-2">Active Contracts</h3>
-        <p class="text-4xl font-bold text-purple-600">{{ $activeContracts }}</p>
+        <p class="text-4xl font-bold text-purple-600"><?php echo e($activeContracts); ?></p>
     </div>
 
     <div class="card">
         <h3 class="text-lg font-semibold text-gray-700 mb-2">Selected Period</h3>
-        <p class="text-2xl font-bold text-green-600">{{ $selectedPeriodLabel }}</p>
-        <p class="text-sm text-gray-500 mt-1">Revenue and installments are filtered by {{ $selectedPeriod }}</p>
+        <p class="text-2xl font-bold text-green-600"><?php echo e($selectedPeriodLabel); ?></p>
+        <p class="text-sm text-gray-500 mt-1">Revenue and installments are filtered by <?php echo e($selectedPeriod); ?></p>
     </div>
 </div>
 
@@ -110,23 +108,25 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($recentContracts as $contract)
+                <?php $__empty_1 = true; $__currentLoopData = $recentContracts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $contract): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <tr>
-                    <td class="font-semibold">{{ $contract->invoice_number }}</td>
-                    <td>{{ $contract->client_name }}</td>
-                    <td>{{ $contract->app_name }}</td>
-                    <td>{{ number_format($contract->amount, 2) }} {{ $contract->currency }}</td>
-                    <td>{{ $contract->duration_months }} months</td>
-                    <td>{{ $contract->invoice_date->format('M d, Y') }}</td>
+                    <td class="font-semibold"><?php echo e($contract->invoice_number); ?></td>
+                    <td><?php echo e($contract->client_name); ?></td>
+                    <td><?php echo e($contract->app_name); ?></td>
+                    <td><?php echo e(number_format($contract->amount, 2)); ?> <?php echo e($contract->currency); ?></td>
+                    <td><?php echo e($contract->duration_months); ?> months</td>
+                    <td><?php echo e($contract->invoice_date->format('M d, Y')); ?></td>
                 </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <tr>
                     <td colspan="6" class="text-center text-gray-500 py-8">No contracts found</td>
                 </tr>
-                @endforelse
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /Users/mustafaaljaf/Revenue 2/resources/views/dashboard.blade.php ENDPATH**/ ?>
