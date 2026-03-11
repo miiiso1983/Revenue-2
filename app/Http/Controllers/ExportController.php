@@ -20,8 +20,7 @@ class ExportController extends Controller
      */
     public function export(Request $request)
     {
-        $startDate = $request->input('start', Carbon::now()->startOfYear()->format('Y-m'));
-        $endDate = $request->input('end', Carbon::now()->endOfYear()->format('Y-m'));
+        ['startDate' => $startDate, 'endDate' => $endDate] = $this->resolveDateFilters($request);
         $currency = $request->input('currency', '');
         $clientFilter = $request->input('client', '');
         $appFilter = $request->input('app_name', '');
@@ -155,11 +154,12 @@ class ExportController extends Controller
     private function generatePivotData($startDate, $endDate, $currency = '', $clientFilter = '', $appFilter = '')
     {
         $start = Carbon::parse("{$startDate}-01")->startOfMonth();
-        $end = Carbon::parse("{$endDate}-01")->startOfMonth();
+        $endMonth = Carbon::parse("{$endDate}-01")->startOfMonth();
+        $rangeEnd = $endMonth->copy()->endOfMonth();
         
         $months = [];
         $current = $start->copy();
-        while ($current <= $end) {
+        while ($current <= $endMonth) {
             $months[] = $current->format('Y-m-d');
             $current->addMonth();
         }
@@ -167,13 +167,13 @@ class ExportController extends Controller
         $contractsQuery = Contract::query()
             ->with([
                 'monthlyAllocations' => fn ($query) => $query
-                    ->whereBetween('month_date', [$start->toDateString(), $end->toDateString()])
+                    ->whereBetween('month_date', [$start->toDateString(), $rangeEnd->toDateString()])
                     ->orderBy('month_date'),
                 'installments' => fn ($query) => $query
-                    ->whereBetween('due_date', [$start->toDateString(), $end->toDateString()])
+                    ->whereBetween('due_date', [$start->toDateString(), $rangeEnd->toDateString()])
                     ->orderBy('due_date'),
             ])
-            ->whereDate('invoice_date', '<=', $end->toDateString());
+            ->whereDate('invoice_date', '<=', $rangeEnd->toDateString());
         
         if ($currency) {
             $contractsQuery->where('currency', $currency);
@@ -192,7 +192,7 @@ class ExportController extends Controller
             ->orderBy('invoice_date')
             ->orderBy('invoice_number')
             ->get()
-            ->filter(fn (Contract $contract) => $this->contractOverlapsRange($contract, $start, $end))
+            ->filter(fn (Contract $contract) => $this->contractOverlapsRange($contract, $start, $endMonth))
             ->values();
 
         $clientData = [];
@@ -248,6 +248,30 @@ class ExportController extends Controller
             ->startOfMonth();
 
         return $contractStart <= $end && $contractEnd >= $start;
+    }
+
+    private function resolveDateFilters(Request $request): array
+    {
+        $period = trim((string) $request->input('period', ''));
+
+        if ($period !== '') {
+            try {
+                $selectedMonth = Carbon::createFromFormat('Y-m', $period)->startOfMonth();
+                $normalizedPeriod = $selectedMonth->format('Y-m');
+
+                return [
+                    'startDate' => $normalizedPeriod,
+                    'endDate' => $normalizedPeriod,
+                ];
+            } catch (\Throwable $exception) {
+                // Fall back to the explicit range filters below.
+            }
+        }
+
+        return [
+            'startDate' => (string) $request->input('start', Carbon::now()->startOfYear()->format('Y-m')),
+            'endDate' => (string) $request->input('end', Carbon::now()->endOfYear()->format('Y-m')),
+        ];
     }
 }
 

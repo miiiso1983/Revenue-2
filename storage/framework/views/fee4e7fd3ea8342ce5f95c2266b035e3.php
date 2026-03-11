@@ -1,8 +1,6 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Pivot Report'); ?>
 
-@section('title', 'Pivot Report')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Revenue & Installment Pivot Report</h1>
     <p class="text-gray-600 mt-1">Monthly breakdown by client</p>
@@ -10,63 +8,64 @@
 
 <!-- Filters -->
 <div class="card mb-6">
-    <form action="{{ route('reports.pivot') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
+    <form action="<?php echo e(route('reports.pivot')); ?>" method="GET" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
         <div>
             <label class="label">Selected Month</label>
-            <input type="month" name="period" value="{{ $period }}" class="input-field">
+            <input type="month" name="period" value="<?php echo e($period); ?>" class="input-field">
             <p class="text-xs text-gray-500 mt-1">Optional: overrides start/end</p>
         </div>
         <div>
             <label class="label">Start Month</label>
-            <input type="month" name="start" value="{{ $startDate }}" class="input-field">
+            <input type="month" name="start" value="<?php echo e($startDate); ?>" class="input-field">
         </div>
         <div>
             <label class="label">End Month</label>
-            <input type="month" name="end" value="{{ $endDate }}" class="input-field">
+            <input type="month" name="end" value="<?php echo e($endDate); ?>" class="input-field">
         </div>
         <div>
             <label class="label">Client</label>
-            <input type="text" name="client" value="{{ $clientFilter }}"
+            <input type="text" name="client" value="<?php echo e($clientFilter); ?>"
                    placeholder="Client name" class="input-field">
         </div>
         <div>
             <label class="label">App Name</label>
             <select name="app_name" class="input-field">
                 <option value="">All Apps</option>
-                @foreach($appNames as $appName)
-                <option value="{{ $appName }}" {{ $appFilter == $appName ? 'selected' : '' }}>
-                    {{ $appName }}
+                <?php $__currentLoopData = $appNames; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $appName): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <option value="<?php echo e($appName); ?>" <?php echo e($appFilter == $appName ? 'selected' : ''); ?>>
+                    <?php echo e($appName); ?>
+
                 </option>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </select>
         </div>
         <div>
             <label class="label">Currency</label>
             <select name="currency" class="input-field">
                 <option value="">All</option>
-                <option value="USD" {{ $currency == 'USD' ? 'selected' : '' }}>USD</option>
-                <option value="IQD" {{ $currency == 'IQD' ? 'selected' : '' }}>IQD</option>
+                <option value="USD" <?php echo e($currency == 'USD' ? 'selected' : ''); ?>>USD</option>
+                <option value="IQD" <?php echo e($currency == 'IQD' ? 'selected' : ''); ?>>IQD</option>
             </select>
         </div>
         <div>
             <label class="label">Data Type</label>
             <select name="data_type" class="input-field">
-                <option value="both" {{ $dataType == 'both' ? 'selected' : '' }}>Both</option>
-                <option value="revenue" {{ $dataType == 'revenue' ? 'selected' : '' }}>Revenue Only</option>
-                <option value="installments" {{ $dataType == 'installments' ? 'selected' : '' }}>Installments Only</option>
-                <option value="discount" {{ $dataType == 'discount' ? 'selected' : '' }}>Discount Only</option>
+                <option value="both" <?php echo e($dataType == 'both' ? 'selected' : ''); ?>>Both</option>
+                <option value="revenue" <?php echo e($dataType == 'revenue' ? 'selected' : ''); ?>>Revenue Only</option>
+                <option value="installments" <?php echo e($dataType == 'installments' ? 'selected' : ''); ?>>Installments Only</option>
+                <option value="discount" <?php echo e($dataType == 'discount' ? 'selected' : ''); ?>>Discount Only</option>
             </select>
         </div>
         <div class="flex items-end space-x-2">
             <button type="submit" class="btn-primary flex-1">Filter</button>
-            <a href="{{ route('reports.pivot') }}" class="btn-secondary">Clear</a>
+            <a href="<?php echo e(route('reports.pivot')); ?>" class="btn-secondary">Clear</a>
         </div>
     </form>
 </div>
 
 <!-- Export Buttons -->
 <div class="mb-4 flex space-x-4">
-    <a href="{{ route('export', ['period' => $period, 'start' => $startDate, 'end' => $endDate, 'currency' => $currency, 'client' => $clientFilter, 'app_name' => $appFilter, 'data_type' => $dataType]) }}"
+    <a href="<?php echo e(route('export', ['period' => $period, 'start' => $startDate, 'end' => $endDate, 'currency' => $currency, 'client' => $clientFilter, 'app_name' => $appFilter, 'data_type' => $dataType])); ?>"
        class="btn-primary">
         📥 Export to Excel
     </a>
@@ -77,29 +76,31 @@
 
 <!-- Pivot Table -->
 <div class="card overflow-x-auto">
-    @if(count($pivotData['clients']) > 0)
+    <?php if(count($pivotData['clients']) > 0): ?>
     <table class="min-w-full border-collapse">
         <thead class="bg-gray-100 sticky top-0">
             <tr>
                 <th class="border px-4 py-2 text-left font-semibold">Client Name</th>
                 <th class="border px-4 py-2 text-left font-semibold">Invoice Numbers</th>
-                @foreach($pivotData['months'] as $month)
+                <?php $__currentLoopData = $pivotData['months']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $month): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <th class="border px-4 py-2 text-center font-semibold whitespace-nowrap">
-                    {{ \Carbon\Carbon::parse($month)->format('M Y') }}
+                    <?php echo e(\Carbon\Carbon::parse($month)->format('M Y')); ?>
+
                 </th>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </tr>
         </thead>
 	        <tbody>
-	            @foreach($pivotData['clients'] as $client)
+	            <?php $__currentLoopData = $pivotData['clients']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $client): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 	            <tr class="hover:bg-gray-50">
-	                <td class="border px-4 py-2 font-semibold">{{ $client['client_name'] }}</td>
+	                <td class="border px-4 py-2 font-semibold"><?php echo e($client['client_name']); ?></td>
 	                <td class="border px-4 py-2 text-sm">
-	                    {{ implode(', ', $client['invoices']) }}
+	                    <?php echo e(implode(', ', $client['invoices'])); ?>
+
 	                </td>
-	                @foreach($pivotData['months'] as $month)
+	                <?php $__currentLoopData = $pivotData['months']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $month): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 	                <td class="border px-4 py-2 text-sm">
-	                    @php
+	                    <?php
 	                        $monthData = $client['months'][$month] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0, 'currency' => ''];
 	                        $showRevenue = in_array($dataType, ['both', 'revenue']);
 	                        $showInstallments = in_array($dataType, ['both', 'installments']);
@@ -107,41 +108,44 @@
 		                        $hasData = ($showRevenue && $monthData['revenue'] > 0)
 		                            || ($showInstallments && $monthData['installments'] > 0)
 		                            || ($showDiscount && $monthData['discount'] > 0);
-	                    @endphp
-	                    @if($hasData)
+	                    ?>
+	                    <?php if($hasData): ?>
 	                        <div class="text-center">
-	                            @if($showRevenue)
+	                            <?php if($showRevenue): ?>
 	                            <div class="text-blue-600 font-semibold">
-	                                Rev: {{ number_format($monthData['revenue'], 2) }}
+	                                Rev: <?php echo e(number_format($monthData['revenue'], 2)); ?>
+
 	                            </div>
-	                            @endif
-	                            @if($showInstallments)
+	                            <?php endif; ?>
+	                            <?php if($showInstallments): ?>
 	                            <div class="text-green-600">
-	                                Inst: {{ number_format($monthData['installments'], 2) }}
+	                                Inst: <?php echo e(number_format($monthData['installments'], 2)); ?>
+
 	                            </div>
-	                            @endif
-		                            @if($showDiscount && $monthData['discount'] > 0)
+	                            <?php endif; ?>
+		                            <?php if($showDiscount && $monthData['discount'] > 0): ?>
 	                            <div class="text-red-600">
-	                                Disc: {{ number_format($monthData['discount'], 2) }}
+	                                Disc: <?php echo e(number_format($monthData['discount'], 2)); ?>
+
 	                            </div>
-	                            @endif
-	                            <div class="text-xs text-gray-500">{{ $monthData['currency'] }}</div>
+	                            <?php endif; ?>
+	                            <div class="text-xs text-gray-500"><?php echo e($monthData['currency']); ?></div>
 	                        </div>
-	                    @else
+	                    <?php else: ?>
 	                        <div class="text-center text-gray-400">-</div>
-	                    @endif
+	                    <?php endif; ?>
 	                </td>
-	                @endforeach
+	                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 	            </tr>
-	            @endforeach
+	            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
 	            <!-- Total Row -->
 	            <tr class="bg-indigo-50 font-bold">
 	                <td class="border px-4 py-2 text-right">Total</td>
 	                <td class="border px-4 py-2"></td>
-	                @foreach($pivotData['months'] as $month)
+	                <?php $__currentLoopData = $pivotData['months']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $month): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 	                <td class="border px-4 py-2 text-sm bg-indigo-50">
-	                    @php
+	                    <?php
 	                        $monthTotals = $pivotData['month_totals'][$month] ?? [
 	                            'by_currency' => [],
 	                            'all' => ['revenue' => 0, 'installments' => 0, 'discount' => 0],
@@ -153,83 +157,89 @@
 	                        $hasAnyTotal = ($showRevenueTotal && $allTotals['revenue'] > 0)
 	                            || ($showInstallmentsTotal && $allTotals['installments'] > 0)
 	                            || ($showDiscountTotal && $allTotals['discount'] > 0);
-	                    @endphp
+	                    ?>
 
-	                    @if($hasAnyTotal)
-	                        @if($currency)
-	                            @php
+	                    <?php if($hasAnyTotal): ?>
+	                        <?php if($currency): ?>
+	                            <?php
 	                                $vals = $monthTotals['by_currency'][$currency] ?? ['revenue' => 0, 'installments' => 0, 'discount' => 0];
 	                                $hasCurrencyTotal = ($showRevenueTotal && $vals['revenue'] > 0)
 	                                    || ($showInstallmentsTotal && $vals['installments'] > 0)
 	                                    || ($showDiscountTotal && $vals['discount'] > 0);
-	                            @endphp
-	                            @if($hasCurrencyTotal)
+	                            ?>
+	                            <?php if($hasCurrencyTotal): ?>
 	                                <div class="text-center">
-	                                    @if($showRevenueTotal && $vals['revenue'] > 0)
+	                                    <?php if($showRevenueTotal && $vals['revenue'] > 0): ?>
 	                                        <div class="text-blue-700">
-	                                            Rev: {{ number_format($vals['revenue'], 2) }}
+	                                            Rev: <?php echo e(number_format($vals['revenue'], 2)); ?>
+
 	                                        </div>
-	                                    @endif
-	                                    @if($showInstallmentsTotal && $vals['installments'] > 0)
+	                                    <?php endif; ?>
+	                                    <?php if($showInstallmentsTotal && $vals['installments'] > 0): ?>
 	                                        <div class="text-green-700">
-	                                            Inst: {{ number_format($vals['installments'], 2) }}
+	                                            Inst: <?php echo e(number_format($vals['installments'], 2)); ?>
+
 	                                        </div>
-	                                    @endif
-	                                    @if($showDiscountTotal && $vals['discount'] > 0)
+	                                    <?php endif; ?>
+	                                    <?php if($showDiscountTotal && $vals['discount'] > 0): ?>
 	                                        <div class="text-red-700">
-	                                            Disc: {{ number_format($vals['discount'], 2) }}
+	                                            Disc: <?php echo e(number_format($vals['discount'], 2)); ?>
+
 	                                        </div>
-	                                    @endif
-	                                    <div class="text-xs text-gray-500">{{ $currency }}</div>
+	                                    <?php endif; ?>
+	                                    <div class="text-xs text-gray-500"><?php echo e($currency); ?></div>
 	                                </div>
-	                            @else
+	                            <?php else: ?>
 	                                <div class="text-center text-gray-400">-</div>
-	                            @endif
-	                        @else
+	                            <?php endif; ?>
+	                        <?php else: ?>
 	                            <div class="text-center text-xs space-y-1">
-	                                @foreach($monthTotals['by_currency'] as $cur => $vals)
-	                                    @php
+	                                <?php $__currentLoopData = $monthTotals['by_currency']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cur => $vals): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+	                                    <?php
 	                                        $lineHasData = ($showRevenueTotal && $vals['revenue'] > 0)
 	                                            || ($showInstallmentsTotal && $vals['installments'] > 0)
 	                                            || ($showDiscountTotal && $vals['discount'] > 0);
-	                                    @endphp
-	                                    @if($lineHasData)
+	                                    ?>
+	                                    <?php if($lineHasData): ?>
 	                                        <div class="mb-1">
-	                                            <div class="font-semibold text-gray-700">{{ $cur }}</div>
-	                                            @if($showRevenueTotal && $vals['revenue'] > 0)
+	                                            <div class="font-semibold text-gray-700"><?php echo e($cur); ?></div>
+	                                            <?php if($showRevenueTotal && $vals['revenue'] > 0): ?>
 	                                                <div class="text-blue-700">
-	                                                    Rev: {{ number_format($vals['revenue'], 2) }}
+	                                                    Rev: <?php echo e(number_format($vals['revenue'], 2)); ?>
+
 	                                                </div>
-	                                            @endif
-	                                            @if($showInstallmentsTotal && $vals['installments'] > 0)
+	                                            <?php endif; ?>
+	                                            <?php if($showInstallmentsTotal && $vals['installments'] > 0): ?>
 	                                                <div class="text-green-700">
-	                                                    Inst: {{ number_format($vals['installments'], 2) }}
+	                                                    Inst: <?php echo e(number_format($vals['installments'], 2)); ?>
+
 	                                                </div>
-	                                            @endif
-	                                            @if($showDiscountTotal && $vals['discount'] > 0)
+	                                            <?php endif; ?>
+	                                            <?php if($showDiscountTotal && $vals['discount'] > 0): ?>
 	                                                <div class="text-red-700">
-	                                                    Disc: {{ number_format($vals['discount'], 2) }}
+	                                                    Disc: <?php echo e(number_format($vals['discount'], 2)); ?>
+
 	                                                </div>
-	                                            @endif
+	                                            <?php endif; ?>
 	                                        </div>
-	                                    @endif
-	                                @endforeach
+	                                    <?php endif; ?>
+	                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 	                            </div>
-	                        @endif
-	                    @else
+	                        <?php endif; ?>
+	                    <?php else: ?>
 	                        <div class="text-center text-gray-400">-</div>
-	                    @endif
+	                    <?php endif; ?>
 	                </td>
-	                @endforeach
+	                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 	            </tr>
 	        </tbody>
     </table>
-    @else
+    <?php else: ?>
     <div class="text-center py-12 text-gray-500">
         <p class="text-lg">No data found for the selected filters</p>
         <p class="text-sm mt-2">Try adjusting your filter criteria</p>
     </div>
-    @endif
+    <?php endif; ?>
 </div>
 
 <!-- Legend -->
@@ -251,20 +261,22 @@
     </div>
 </div>
 
-@if(isset($pivotData['total_discount']))
+<?php if(isset($pivotData['total_discount'])): ?>
 	<div class="card mt-4">
 	    <h3 class="font-bold text-gray-800 mb-2">Total Discounts for Selected Period:</h3>
 	    <p class="text-lg font-semibold">
-	        {{ number_format($pivotData['total_discount'], 2) }}
-	        @if($currency)
-	            {{ $currency }}
-	        @endif
+	        <?php echo e(number_format($pivotData['total_discount'], 2)); ?>
+
+	        <?php if($currency): ?>
+	            <?php echo e($currency); ?>
+
+	        <?php endif; ?>
 	    </p>
-	    @if(!$currency)
+	    <?php if(!$currency): ?>
 	        <p class="text-xs text-gray-500 mt-1">Note: Total may include multiple currencies. Use the Currency filter for a single-currency total.</p>
-	    @endif
+	    <?php endif; ?>
 	</div>
-@endif
+<?php endif; ?>
 
 <style>
     @media print {
@@ -277,5 +289,7 @@
         }
     }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /Users/mustafaaljaf/Revenue 2/resources/views/reports/pivot.blade.php ENDPATH**/ ?>

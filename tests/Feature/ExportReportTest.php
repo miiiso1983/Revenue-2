@@ -71,8 +71,52 @@ class ExportReportTest extends TestCase
         $spreadsheet->disconnectWorksheets();
     }
 
+    /** @test */
+    public function it_exports_a_single_selected_month_when_period_is_provided()
+    {
+        $this->createContract([
+            'client_name' => 'Acme',
+            'invoice_number' => 'INV-NOV',
+            'invoice_date' => '2026-11-01',
+            'duration_months' => 3,
+            'amount' => 300,
+        ]);
+
+        $this->createContract([
+            'client_name' => 'Beta',
+            'invoice_number' => 'INV-DEC',
+            'invoice_date' => '2026-12-01',
+            'duration_months' => 3,
+            'amount' => 300,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('export', [
+            'period' => '2026-11',
+            'data_type' => 'both',
+        ]));
+
+        $response->assertOk();
+
+        $filePath = $response->baseResponse->getFile()->getPathname();
+        $spreadsheet = IOFactory::load($filePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $this->assertSame('Period: 2026-11 to 2026-11', $sheet->getCell('A2')->getValue());
+        $this->assertSame('Nov 2026', $sheet->getCell('C4')->getValue());
+        $this->assertNull($sheet->getCell('D4')->getValue());
+        $this->assertSame('Acme', $sheet->getCell('A5')->getValue());
+        $this->assertSame('INV-NOV', $sheet->getCell('B5')->getValue());
+        $this->assertStringContainsString('Rev: 100.00', (string) $sheet->getCell('C5')->getValue());
+        $this->assertStringContainsString('Inst: 100.00', (string) $sheet->getCell('C5')->getValue());
+        $this->assertNull($sheet->getCell('A6')->getValue());
+
+        $spreadsheet->disconnectWorksheets();
+    }
+
     private function createContract(array $overrides): Contract
     {
+        $adminId = $this->admin->getKey();
+
         return Contract::create(array_merge([
             'app_name' => 'Export App',
             'client_name' => 'Default Client',
@@ -82,7 +126,7 @@ class ExportReportTest extends TestCase
             'amount' => 1200,
             'currency' => 'USD',
             'installment_frequency' => 'monthly',
-            'created_by' => $this->admin->id,
+            'created_by' => $adminId,
         ], $overrides));
     }
 }

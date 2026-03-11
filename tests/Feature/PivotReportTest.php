@@ -110,8 +110,41 @@ class PivotReportTest extends TestCase
             });
     }
 
+    /** @test */
+    public function it_allows_filtering_to_a_single_month_with_the_period_parameter()
+    {
+        $this->createContract([
+            'client_name' => 'Acme',
+            'invoice_number' => 'INV-NOV',
+            'invoice_date' => '2026-11-01',
+            'duration_months' => 3,
+            'amount' => 300,
+        ]);
+
+        $this->createContract([
+            'client_name' => 'Beta',
+            'invoice_number' => 'INV-OCT',
+            'invoice_date' => '2026-10-01',
+            'duration_months' => 12,
+            'amount' => 1200,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('reports.pivot', ['period' => '2026-11', 'data_type' => 'revenue']))
+            ->assertOk()
+            ->assertViewHas('period', '2026-11')
+            ->assertViewHas('startDate', '2026-11')
+            ->assertViewHas('endDate', '2026-11')
+            ->assertViewHas('pivotData', function (array $pivotData) {
+                return $pivotData['months'] === ['2026-11-01']
+                    && round($pivotData['month_totals']['2026-11-01']['all']['revenue'] ?? 0, 2) === 200.00;
+            });
+    }
+
     private function createContract(array $overrides): Contract
     {
+        $adminId = $this->admin->getKey();
+
         return Contract::create(array_merge([
             'app_name' => 'Pivot App',
             'client_name' => 'Default Client',
@@ -121,7 +154,7 @@ class PivotReportTest extends TestCase
             'amount' => 1200,
             'currency' => 'USD',
             'installment_frequency' => 'monthly',
-            'created_by' => $this->admin->id,
+            'created_by' => $adminId,
         ], $overrides));
     }
 }
